@@ -135,7 +135,7 @@
   "Outputs" : {
     "SubnetId" : {
       "Description" : "Subnet Id",
-      "Value" : { "Fn::GetAtt" : [ "Subnet", "uuid" ] }
+      "Value" : { "Fn::GetAtt" : [ "Subnet", "id" ] }
     }
   }
 }

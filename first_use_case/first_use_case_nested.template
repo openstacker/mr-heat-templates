@@ -85,101 +85,31 @@
   
   "Resources" : {
   
-    "Network": {
-      "Type": "OS::Quantum::Net",
+    "NetworkSetup": {
+      "Type": "AWS::CloudFormation::Stack",
       "Properties": {
-        "name": "My Network"
+        "TemplateURL": "https://raw.github.com/hanney/mr-heat-templates/master/common/vpn_service.template",
+        "Parameters": {
+          "ExternalNetworkId"        : { "Ref" : "ExternalNetworkId" },
+          "ExternalGatewayIPAddress" : { "Ref" : "ExternalGatewayIPAddress" },
+          "SubnetCidr"               : { "Ref" : "SubnetCidr" },
+          "SubnetPoolStart"          : { "Ref" : "SubnetPoolStart" },
+          "SubnetPoolEnd"            : { "Ref" : "SubnetPoolEnd" },
+          "VPNPeerCidr"              : { "Ref" : "VPNPeerCidr" }
+        }
       }
     },
-
-    "Subnet": {
-      "Type": "OS::Quantum::Subnet",
-      "Properties": {
-        "name": "My Subnet",
-        "network_id": { "Ref" : "Network" },
-        "ip_version": 4,
-        "cidr": { "Ref" : "SubnetCidr" },
-        "allocation_pools": [ {
-          "start": { "Ref" : "SubnetPoolStart" },
-          "end": { "Ref" : "SubnetPoolEnd" }
-          }
-        ]
-      }
-    },
-
-    "Router": {
-      "Type": "OS::Quantum::Router",
-      "Properties": {
-        "name": "My Router"
-      }
-    },
-
-    "RouterInterface": {
-      "Type": "OS::Quantum::RouterInterface",
-      "Properties": {
-        "router_id": { "Ref" : "Router" },
-        "subnet_id": { "Ref" : "Subnet" }
-      }
-    },
-    
-    "RouterGateway": {
-      "Type": "OS::Quantum::RouterGateway",
-      "Properties": {
-        "router_id": { "Ref" : "Router" },
-        "network_id": { "Ref" : "ExternalNetworkId" }
-      }
-    },
-
-    "VPNService" : {
-      "Type" : "OS::Quantum::VPNService",
-      "Properties" : {
-        "name" : "VPNService",
-        "description" : "My new VPN service",
-        "router_id" : { "Ref" : "Router" },
-        "subnet_id" : { "Ref" : "Subnet" }
-      }
-    },
-
-    "IKEPolicy" : {
-      "Type" : "OS::Quantum::IKEPolicy",
-      "Properties" : {
-        "name" : "IKEPolicy",
-        "description" : "My new IKE policy"
-      }
-    },
-
-    "IPsecPolicy" : {
-      "Type" : "OS::Quantum::IPsecPolicy",
-      "Properties" : {
-        "name" : "IPsecPolicy",
-        "description" : "My new IPsec policy"
-      }
-    },
-
-    "VPNConnection" : {
-      "Type" : "OS::Quantum::VPNConnection",
-      "Properties" : {
-        "name" : "VPNConnection",
-        "description" : "My new VPN connection",
-        "peer_address" : { "Ref" : "ExternalGatewayIPAddress" },
-        "peer_id" : { "Ref" : "ExternalGatewayIPAddress" },
-        "peer_cidrs" : [ { "Ref" : "VPNPeerCidr" } ],
-        "psk" : "secret",
-        "ikepolicy_id" : { "Ref" : "IKEPolicy" },
-        "ipsecpolicy_id" : { "Ref" : "IPsecPolicy" },
-        "vpnservice_id" : { "Ref" : "VPNService" }
-      }
-    },
-
+  
     "Server" : {
       "Type": "AWS::EC2::Instance",
+      "DependsOn" : "NetworkSetup",
       "Properties": {
         "ImageId"      : { "Fn::FindInMap" : [ "OpenstackRegion2Image",
                                                { "Ref" : "RegionOne" },
                                                { "Ref" : "LinuxDistribution" } ] },
         "InstanceType" : { "Ref" : "InstanceType" },
         "KeyName"      : { "Ref" : "KeyName" },
-        "SubnetId"     : { "Ref" : "Subnet" }
+        "SubnetId"     : { "Fn::GetAtt": [ "NetworkSetup", "Outputs.SubnetId" ]}
       }
     }
   },
