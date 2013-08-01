@@ -23,7 +23,7 @@
     "ServerOne" : {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
-        "TemplateURL": "https://raw.github.com/hanney/mr-heat-templates/master/first_use_case/first_use_case_nested.template",
+        "TemplateURL": "http://127.0.0.1:8080/first_use_case/first_use_case_nested.template",
         "Parameters": {
           "KeyName"                  : { "Ref" : "KeyName" },
           "RegionName"               : "RegionOne",
@@ -42,7 +42,7 @@
     "ServerTwo" : {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
-        "TemplateURL": "https://raw.github.com/hanney/mr-heat-templates/master/first_use_case/first_use_case_nested.template",
+        "TemplateURL": "http://127.0.0.1:8080/first_use_case/first_use_case_nested.template",
         "Parameters": {
           "KeyName"                  : { "Ref" : "KeyName" },
           "RegionName"               : "RegionTwo",

@@ -87,7 +87,7 @@
     "NetworkSetup": {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
-        "TemplateURL": "https://raw.github.com/hanney/mr-heat-templates/master/common/vpn_service.template",
+        "TemplateURL": "http://127.0.0.1:8080/common/vpn_service.template",
         "Parameters": {
           "ExternalNetworkId"        : { "Ref" : "ExternalNetworkId" },
           "ExternalGatewayIPAddress" : { "Ref" : "ExternalGatewayIPAddress" },
