@@ -10,10 +10,9 @@
       "Type" : "String"
     },
 
-    "RegionOne" : {
-      "Description" : "Name of the first region",
+    "RegionName" : {
+      "Description" : "Name of the region",
       "Type" : "String",
-      "Default" : "RegionOne",
       "ConstraintDescription" : "must be a existing OpenStack region"
     },
     
@@ -105,7 +104,7 @@
       "DependsOn" : "NetworkSetup",
       "Properties": {
         "ImageId"      : { "Fn::FindInMap" : [ "OpenstackRegion2Image",
-                                               { "Ref" : "RegionOne" },
+                                               { "Ref" : "RegionName" },
                                                { "Ref" : "LinuxDistribution" } ] },
         "InstanceType" : { "Ref" : "InstanceType" },
         "KeyName"      : { "Ref" : "KeyName" },
