@@ -65,6 +65,44 @@
       "Description" : "Cidr for VPN peer",
       "Type" : "String",
       "ConstraintDescription" : "must be a valid cidr"
+    },
+    
+    "DBName": {
+      "Default": "wordpress",
+      "Description" : "The WordPress database name",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "64",
+      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+    },
+
+    "DBUsername": {
+      "Default": "admin",
+      "NoEcho": "true",
+      "Description" : "The WordPress database admin account username",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "16",
+      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+    },
+
+    "DBPassword": {
+      "Default": "admin",
+      "NoEcho": "true",
+      "Description" : "The WordPress database admin account password",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "41",
+      "AllowedPattern" : "[a-zA-Z0-9]*",
+      "ConstraintDescription" : "must contain only alphanumeric characters."
+    },
+    
+    "DBServerIPAddress" : {
+      "Description" : "IP address of database server",
+      "Type" : "String",
+      "ConstraintDescription" : "must be a IP address"
     }
 
   },
@@ -99,24 +137,49 @@
       }
     },
   
-    "Server" : {
+    "AppServer" : {
       "Type": "AWS::EC2::Instance",
       "DependsOn" : "NetworkSetup",
+      "Metadata" : {
+        "AWS::CloudFormation::Init" : {
+          "config" : {
+            "packages" : {
+              "yum" : {
+                "httpd"        : [],
+                "wordpress"    : []
+              }
+            },
+            "services" : {
+              "systemd" : {
+                "httpd"    : { "enabled" : "true", "ensureRunning" : "true" }
+              }
+            }
+          }
+        }
+      },
       "Properties": {
         "ImageId"      : { "Fn::FindInMap" : [ "OpenstackRegion2Image",
                                                { "Ref" : "RegionName" },
                                                { "Ref" : "LinuxDistribution" } ] },
         "InstanceType" : { "Ref" : "InstanceType" },
         "KeyName"      : { "Ref" : "KeyName" },
-        "SubnetId"     : { "Fn::GetAtt": [ "NetworkSetup", "Outputs.SubnetId" ]}
+        "SubnetId"     : { "Fn::GetAtt": [ "NetworkSetup", "Outputs.SubnetId" ]},
+        "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
+          "#!/bin/bash -v\n",
+          "/opt/aws/bin/cfn-init\n",
+          "sed -i \"/Deny from All/d\" /etc/httpd/conf.d/wordpress.conf\n",
+          "sed -i \"s/Require local/Require all granted/\" /etc/httpd/conf.d/wordpress.conf\n",
+          "sed --in-place --e s/database_name_here/", { "Ref" : "DBName" }, "/ --e s/username_here/", { "Ref" : "DBUsername" }, "/ --e s/password_here/", { "Ref" : "DBPassword" }, "/ --e s/localhost/", { "Ref" : "DBServerIPAddress" }, "/ /usr/share/wordpress/wp-config.php\n",
+          "systemctl restart httpd.service\n"
+        ]]}}
       }
     }
   },
 
   "Outputs" : {
-    "ServerIP" : {
-      "Description" : "Server IP address",
-      "Value" : { "Fn::GetAtt" : [ "Server", "PublicIp" ] }
+    "AppServerIP" : {
+      "Description" : "Application Server IP address",
+      "Value" : { "Fn::GetAtt" : [ "AppServer", "PublicIp" ] }
     }
   }
 }

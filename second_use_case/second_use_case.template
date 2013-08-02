@@ -20,10 +20,10 @@
 
   "Resources" : {
   
-    "ServerOne" : {
+    "DBServer" : {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
-        "TemplateURL": "http://127.0.0.1:8080/first_use_case/first_use_case_nested.template",
+        "TemplateURL": "http://127.0.0.1:8080/second_use_case/db_server.template",
         "Parameters": {
           "KeyName"                  : { "Ref" : "KeyName" },
           "RegionName"               : "RegionOne",
@@ -39,10 +39,10 @@
       }
     },
     
-    "ServerTwo" : {
+    "AppServer" : {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
-        "TemplateURL": "http://127.0.0.1:8080/first_use_case/first_use_case_nested.template",
+        "TemplateURL": "http://127.0.0.1:8080/second_use_case/app_server.template",
         "Parameters": {
           "KeyName"                  : { "Ref" : "KeyName" },
           "RegionName"               : "RegionTwo",
@@ -53,7 +53,8 @@
           "SubnetCidr"               : "10.2.0.0/24",
           "SubnetPoolStart"          : "10.2.0.10",
           "SubnetPoolEnd"            : "10.2.0.200",
-          "VPNPeerCidr"              : "10.1.0.0/24"
+          "VPNPeerCidr"              : "10.1.0.0/24",
+          "DBServerIPAddress"        : { "Fn::GetAtt": [ "DBServer", "Outputs.DBServerIP" ]}
         }
       }
     }
@@ -61,13 +62,13 @@
   },
 
   "Outputs" : {
-    "ServerOneIP" : {
-      "Description" : "Server One IP address",
-      "Value" : { "Fn::GetAtt": [ "ServerOne", "Outputs.ServerIP" ]}
+    "DBServerIP" : {
+      "Description" : "Database Server IP Address",
+      "Value" : { "Fn::GetAtt": [ "DBServer", "Outputs.DBServerIP" ]}
     },
-    "ServerTwoIP" : {
-      "Description" : "Server Two IP address",
-      "Value" : { "Fn::GetAtt": [ "ServerTwo", "Outputs.ServerIP" ]}
+    "AppServerIP" : {
+      "Description" : "Application Server IP Address",
+      "Value" : { "Fn::GetAtt": [ "AppServer", "Outputs.AppServerIP" ]}
     }
   }
 }

@@ -65,6 +65,49 @@
       "Description" : "Cidr for VPN peer",
       "Type" : "String",
       "ConstraintDescription" : "must be a valid cidr"
+    },
+    
+    "DBName": {
+      "Default": "wordpress",
+      "Description" : "The WordPress database name",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "64",
+      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+    },
+
+    "DBUsername": {
+      "Default": "admin",
+      "NoEcho": "true",
+      "Description" : "The WordPress database admin account username",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "16",
+      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+    },
+
+    "DBPassword": {
+      "Default": "admin",
+      "NoEcho": "true",
+      "Description" : "The WordPress database admin account password",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "41",
+      "AllowedPattern" : "[a-zA-Z0-9]*",
+      "ConstraintDescription" : "must contain only alphanumeric characters."
+    },
+
+    "DBRootPassword": {
+      "Default": "admin",
+      "NoEcho": "true",
+      "Description" : "Root password for MySQL",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "41",
+      "AllowedPattern" : "[a-zA-Z0-9]*",
+      "ConstraintDescription" : "must contain only alphanumeric characters."
     }
 
   },
@@ -99,24 +142,54 @@
       }
     },
   
-    "Server" : {
+    "DBServer" : {
       "Type": "AWS::EC2::Instance",
       "DependsOn" : "NetworkSetup",
+      "Metadata" : {
+        "AWS::CloudFormation::Init" : {
+          "config" : {
+            "packages" : {
+              "yum" : {
+                "mysql"        : [],
+                "mysql-server" : []
+              }
+            },
+            "services" : {
+              "systemd" : {
+                "mysqld"   : { "enabled" : "true", "ensureRunning" : "true" }
+              }
+            }
+          }
+        }
+      },
       "Properties": {
         "ImageId"      : { "Fn::FindInMap" : [ "OpenstackRegion2Image",
                                                { "Ref" : "RegionName" },
                                                { "Ref" : "LinuxDistribution" } ] },
         "InstanceType" : { "Ref" : "InstanceType" },
         "KeyName"      : { "Ref" : "KeyName" },
-        "SubnetId"     : { "Fn::GetAtt": [ "NetworkSetup", "Outputs.SubnetId" ]}
+        "SubnetId"     : { "Fn::GetAtt": [ "NetworkSetup", "Outputs.SubnetId" ]},
+        "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
+          "#!/bin/bash -v\n",
+          "/opt/aws/bin/cfn-init\n",
+          "# Setup MySQL root password and create a user\n",
+          "mysqladmin -u root password '", { "Ref" : "DBRootPassword" }, "'\n",
+          "cat << EOF | mysql -u root --password='", { "Ref" : "DBRootPassword" }, "'\n",
+          "CREATE DATABASE ", { "Ref" : "DBName" }, ";\n",
+          "GRANT ALL PRIVILEGES ON ", { "Ref" : "DBName" }, ".* TO \"", { "Ref" : "DBUsername" }, "\"@\"%\"\n",
+          "IDENTIFIED BY \"", { "Ref" : "DBPassword" }, "\";\n",
+          "FLUSH PRIVILEGES;\n",
+          "EXIT\n",
+          "EOF\n"
+        ]]}}
       }
     }
   },
 
   "Outputs" : {
-    "ServerIP" : {
-      "Description" : "Server IP address",
-      "Value" : { "Fn::GetAtt" : [ "Server", "PublicIp" ] }
+    "DBServerIP" : {
+      "Description" : "DB Server IP address",
+      "Value" : { "Fn::GetAtt" : [ "DBServer", "PublicIp" ] }
     }
   }
 }

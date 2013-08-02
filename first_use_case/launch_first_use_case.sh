@@ -1,6 +1,6 @@
 #!/bin/sh
 
-STACK_NAME='F2'
+STACK_NAME='F1'
 KEY_NAME='heat_key'
 EXTERNAL_NETWORK_ID=`neutron net-list | grep public | awk '{print $2}' | xargs -I% echo %`
 

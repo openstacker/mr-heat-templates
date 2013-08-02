@@ -1,6 +1,6 @@
 #!/bin/sh
 
-STACK_NAME='N2'
+STACK_NAME='N1'
 KEY_NAME='heat_key'
 REGION_NAME='RegionOne'
 EXTERNAL_NETWORK_ID=`neutron net-list | grep public | awk '{print $2}' | xargs -I% echo %`

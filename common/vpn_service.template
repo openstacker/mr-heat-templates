@@ -1,7 +1,7 @@
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
 
-  "Description" : "Creates VPN connection between to different regions and lanuches one server in each region",
+  "Description" : "",
 
   "Parameters" : {
 
@@ -59,6 +59,7 @@
         "network_id": { "Ref" : "Network" },
         "ip_version": 4,
         "cidr": { "Ref" : "SubnetCidr" },
+        "dns_nameservers": ["8.8.8.8"],
         "allocation_pools": [ {
           "start": { "Ref" : "SubnetPoolStart" },
           "end": { "Ref" : "SubnetPoolEnd" }
