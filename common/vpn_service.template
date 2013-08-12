@@ -92,51 +92,71 @@
     },
 
     "VPNService" : {
-      "Type" : "OS::Quantum::VPNService",
+      "Type" : "OS::Neutron::VPNService",
       "Properties" : {
         "name" : "VPNService",
         "description" : "My new VPN service",
+        "admin_state_up" : true,
         "router_id" : { "Ref" : "Router" },
         "subnet_id" : { "Ref" : "Subnet" }
       }
     },
 
     "IKEPolicy" : {
-      "Type" : "OS::Quantum::IKEPolicy",
+      "Type" : "OS::Neutron::IKEPolicy",
       "Properties" : {
         "name" : "IKEPolicy",
-        "description" : "My new IKE policy"
+        "description" : "My new IKE policy",
+        "auth_algorithm" : "sha1",
+        "encryption_algorithm" : "3des",
+        "phase1_negotiation_mode" : "main",
+        "lifetime" : {
+            "units" : "seconds",
+            "value" : 3600
+        },
+        "pfs" : "group5",
+        "ike_version" : "v1"
       }
     },
 
     "IPsecPolicy" : {
-      "Type" : "OS::Quantum::IPsecPolicy",
+      "Type" : "OS::Neutron::IPsecPolicy",
       "Properties" : {
         "name" : "IPsecPolicy",
-        "description" : "My new IPsec policy"
+        "description" : "My new IPsec policy",
+        "transform_protocol": "esp",
+        "encapsulation_mode" : "tunnel",
+        "auth_algorithm" : "sha1",
+        "encryption_algorithm" : "3des",
+        "lifetime" : {
+            "units" : "seconds",
+            "value" : 3600
+        },
+        "pfs" : "group5"
       }
     },
 
-    "VPNConnection" : {
-      "Type" : "OS::Quantum::VPNConnection",
+    "IPsecSiteConnection" : {
+      "Type" : "OS::Neutron::VPNConnection",
       "Properties" : {
         "name" : "VPNConnection",
         "description" : "My new VPN connection",
         "peer_address" : { "Ref" : "ExternalGatewayIPAddress" },
         "peer_id" : { "Ref" : "ExternalGatewayIPAddress" },
         "peer_cidrs" : [ { "Ref" : "VPNPeerCidr" } ],
+        "mtu" : 1500,
+        "dpd" : { 
+            "actions" : "hold",
+            "interval" : 30,
+            "timeout" : 120
+        },
         "psk" : "secret",
+        "initiator" : "bi-directional",
+        "admin_state_up" : true,
         "ikepolicy_id" : { "Ref" : "IKEPolicy" },
         "ipsecpolicy_id" : { "Ref" : "IPsecPolicy" },
         "vpnservice_id" : { "Ref" : "VPNService" }
       }
-    }
-  },
-
-  "Outputs" : {
-    "SubnetId" : {
-      "Description" : "Subnet Id",
-      "Value" : { "Fn::GetAtt" : [ "Subnet", "id" ] }
     }
   }
 }
