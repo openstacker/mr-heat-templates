@@ -1,6 +1,7 @@
 #!/bin/sh
 
-STACK_NAME=V1
+TIME=`date +"%H%M%S"`
+STACK_NAME="VPN_${TIME}"
 
 EXTERNAL_NETWORK_ID=`neutron net-list | grep public | awk '{print $2}' | xargs -I% echo %`
 EXTERNAL_GATEWAY_IP_ADDRESS='172.24.4.233'

@@ -137,9 +137,9 @@
     },
 
     "IPsecSiteConnection" : {
-      "Type" : "OS::Neutron::VPNConnection",
+      "Type" : "OS::Neutron::IPsecSiteConnection",
       "Properties" : {
-        "name" : "VPNConnection",
+        "name" : "IPsecSiteConnection",
         "description" : "My new VPN connection",
         "peer_address" : { "Ref" : "ExternalGatewayIPAddress" },
         "peer_id" : { "Ref" : "ExternalGatewayIPAddress" },
