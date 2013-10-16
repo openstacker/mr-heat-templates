@@ -4,32 +4,52 @@
   "Description" : "",
 
   "Parameters" : {
-  
+
     "KeyName" : {
       "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instances",
       "Type" : "String"
-    },
-    
-    "ExternalNetworkId" : {
-      "Description" : "External network id",
-      "Type" : "String",
-      "ConstraintDescription" : "must be a id of existing external network"
     }
 
   },
 
   "Resources" : {
+
+    "ContextOne": {
+      "Type": "OS::Cloud::Context",
+      "Properties": {
+        "name": "Context One",
+        "description": "My first context",
+        "username" : "admin",
+        "password" : "openstack",
+        "project_name" : "demo",
+        "region_name" : "RegionOne"
+      }
+    },
+
+    "ContextTwo": {
+      "Type": "OS::Cloud::Context",
+      "Properties": {
+        "name": "Context Two",
+        "description": "My second context",
+        "username" : "admin",
+        "password" : "openstack",
+        "project_name" : "demo",
+        "region_name" : "RegionTwo"
+      }
+    },
   
     "ServerOne" : {
       "Type": "AWS::CloudFormation::Stack",
+      "DependsOn" : "ContextOne",
       "Properties": {
+        "Context" : { "Ref" : "ContextOne" },
         "TemplateURL": "http://127.0.0.1:8080/first_use_case/first_use_case_nested.template",
         "Parameters": {
           "KeyName"                  : { "Ref" : "KeyName" },
           "RegionName"               : "RegionOne",
           "InstanceType"             : "m1.small",
           "LinuxDistribution"        : "U12",
-          "ExternalNetworkId"        : { "Ref" : "ExternalNetworkId" },
+          "ExternalNetworkNameOrId"  : "public",
           "ExternalGatewayIPAddress" : "172.24.4.233",
           "SubnetCidr"               : "10.1.0.0/24",
           "SubnetPoolStart"          : "10.1.0.10",
@@ -38,17 +58,19 @@
         }
       }
     },
-    
+
     "ServerTwo" : {
       "Type": "AWS::CloudFormation::Stack",
+      "DependsOn" : "ContextTwo",
       "Properties": {
+        "Context" : { "Ref" : "ContextTwo" },
         "TemplateURL": "http://127.0.0.1:8080/first_use_case/first_use_case_nested.template",
         "Parameters": {
           "KeyName"                  : { "Ref" : "KeyName" },
           "RegionName"               : "RegionTwo",
           "InstanceType"             : "m1.small",
           "LinuxDistribution"        : "U12",
-          "ExternalNetworkId"        : { "Ref" : "ExternalNetworkId" },
+          "ExternalNetworkNameOrId"  : "public",
           "ExternalGatewayIPAddress" : "172.24.4.226",
           "SubnetCidr"               : "10.2.0.0/24",
           "SubnetPoolStart"          : "10.2.0.10",
