@@ -60,6 +60,7 @@
 
     "Subnet": {
       "Type": "OS::Quantum::Subnet",
+      "DependsOn" : "Network",
       "Properties": {
         "name": "My Subnet",
         "network_id": { "Ref" : "Network" },
@@ -83,6 +84,7 @@
 
     "RouterInterface": {
       "Type": "OS::Quantum::RouterInterface",
+      "DependsOn" : "Subnet",
       "Properties": {
         "router_id": { "Ref" : "Router" },
         "subnet_id": { "Ref" : "Subnet" }
@@ -91,6 +93,7 @@
     
     "RouterGateway": {
       "Type": "OS::Quantum::RouterGateway",
+      "DependsOn" : "RouterInterface",
       "Properties": {
         "router_id": { "Ref" : "Router" },
         "network_id": { "Ref" : "ExternalNetworkNameOrId" }
@@ -99,6 +102,7 @@
 
     "VPNService" : {
       "Type" : "OS::Neutron::VPNService",
+      "DependsOn" : "RouterGateway",
       "Properties" : {
         "name" : "VPNService",
         "description" : "My new VPN service",
@@ -144,6 +148,7 @@
 
     "IPsecSiteConnection" : {
       "Type" : "OS::Neutron::IPsecSiteConnection",
+      "DependsOn" : "VPNService",
       "Properties" : {
         "name" : "IPsecSiteConnection",
         "description" : "My new VPN connection",
@@ -163,6 +168,13 @@
         "ipsecpolicy_id" : { "Ref" : "IPsecPolicy" },
         "vpnservice_id" : { "Ref" : "VPNService" }
       }
+    }
+  },
+
+  "Outputs" : {
+    "SubnetId" : {
+      "Description" : "Subnet Id",
+      "Value" : { "Ref" : "Subnet" }
     }
   }
 }
