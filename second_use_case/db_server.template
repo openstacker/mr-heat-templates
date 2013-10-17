@@ -31,10 +31,11 @@
       "AllowedValues" : [ "F17", "U12" ]
     },
 
-    "ExternalNetworkId" : {
-      "Description" : "External network id",
+    "ExternalNetworkNameOrId" : {
+      "Description" : "External network name or id",
       "Type" : "String",
-      "ConstraintDescription" : "must be a id of existing external network"
+      "Default" : "public",
+      "ConstraintDescription" : "must be a name or id of existing external network"
     },
 
     "ExternalGatewayIPAddress" : {
@@ -132,7 +133,7 @@
       "Properties": {
         "TemplateURL": "http://127.0.0.1:8080/common/vpn_service.template",
         "Parameters": {
-          "ExternalNetworkId"        : { "Ref" : "ExternalNetworkId" },
+          "ExternalNetworkNameOrId"  : { "Ref" : "ExternalNetworkNameOrId" },
           "ExternalGatewayIPAddress" : { "Ref" : "ExternalGatewayIPAddress" },
           "SubnetCidr"               : { "Ref" : "SubnetCidr" },
           "SubnetPoolStart"          : { "Ref" : "SubnetPoolStart" },

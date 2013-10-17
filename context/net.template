@@ -1,0 +1,13 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  
+  "Resources" : {
+  
+    "Network": {
+      "Type": "OS::Quantum::Net",
+      "Properties": {
+        "name": "My Network"
+      }
+    }
+  }
+}

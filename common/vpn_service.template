@@ -5,39 +5,45 @@
 
   "Parameters" : {
 
-    "ExternalNetworkId" : {
-      "Description" : "External network id",
+    "ExternalNetworkNameOrId" : {
+      "Description" : "External network name or id",
       "Type" : "String",
-      "ConstraintDescription" : "must be a id of existing external network"
+      "Default" : "public",
+      "ConstraintDescription" : "must be a name or id of existing external network"
     },
 
     "ExternalGatewayIPAddress" : {
       "Description" : "External Gateway IP address",
       "Type" : "String",
+      "Default" : "172.24.4.233",
       "ConstraintDescription" : "must be an IP address of external gateway"
     },
 
     "SubnetCidr" : {
       "Description" : "Subnet cidr",
       "Type" : "String",
+      "Default" : "10.1.0.0/24",
       "ConstraintDescription" : "must be a cidr"
     },
 
     "SubnetPoolStart" : {
       "Description" : "Start of allocation pool for subnet",
       "Type" : "String",
+      "Default" : "10.1.0.10",
       "ConstraintDescription" : "must be a valid IP address"
     },
 
     "SubnetPoolEnd" : {
       "Description" : "End of allocation pool for subnet",
       "Type" : "String",
+      "Default" : "10.1.0.200",
       "ConstraintDescription" : "must be a valid IP address"
     },
     
     "VPNPeerCidr" : {
       "Description" : "Cidr for VPN peer",
       "Type" : "String",
+      "Default" : "10.2.0.0/24",
       "ConstraintDescription" : "must be a valid cidr"
     }
 
@@ -54,6 +60,7 @@
 
     "Subnet": {
       "Type": "OS::Quantum::Subnet",
+      "DependsOn" : "Network",
       "Properties": {
         "name": "My Subnet",
         "network_id": { "Ref" : "Network" },
@@ -77,6 +84,7 @@
 
     "RouterInterface": {
       "Type": "OS::Quantum::RouterInterface",
+      "DependsOn" : "Subnet",
       "Properties": {
         "router_id": { "Ref" : "Router" },
         "subnet_id": { "Ref" : "Subnet" }
@@ -85,14 +93,16 @@
     
     "RouterGateway": {
       "Type": "OS::Quantum::RouterGateway",
+      "DependsOn" : "RouterInterface",
       "Properties": {
         "router_id": { "Ref" : "Router" },
-        "network_id": { "Ref" : "ExternalNetworkId" }
+        "network_id": { "Ref" : "ExternalNetworkNameOrId" }
       }
     },
 
     "VPNService" : {
       "Type" : "OS::Neutron::VPNService",
+      "DependsOn" : "RouterGateway",
       "Properties" : {
         "name" : "VPNService",
         "description" : "My new VPN service",
@@ -138,6 +148,7 @@
 
     "IPsecSiteConnection" : {
       "Type" : "OS::Neutron::IPsecSiteConnection",
+      "DependsOn" : "VPNService",
       "Properties" : {
         "name" : "IPsecSiteConnection",
         "description" : "My new VPN connection",
@@ -157,6 +168,13 @@
         "ipsecpolicy_id" : { "Ref" : "IPsecPolicy" },
         "vpnservice_id" : { "Ref" : "VPNService" }
       }
+    }
+  },
+
+  "Outputs" : {
+    "SubnetId" : {
+      "Description" : "Subnet Id",
+      "Value" : { "Ref" : "Subnet" }
     }
   }
 }
