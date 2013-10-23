@@ -19,11 +19,11 @@
       "ConstraintDescription" : "must be a password for given username"
     },
 
-    "ProjectName" : {
-      "Description" : "Project name",
+    "Tenant" : {
+      "Description" : "Tenant name",
       "Type" : "String",
       "Default" : "demo",
-      "ConstraintDescription" : "must be a existing project name"
+      "ConstraintDescription" : "must be a existing tenant name"
     },
 
     "RegionName" : {
@@ -44,7 +44,7 @@
         "description": "My new context description",
         "username" : { "Ref" : "Username" },
         "password" : { "Ref" : "Password" },
-        "project_name" : { "Ref" : "ProjectName" },
+        "tenant" : { "Ref" : "Tenant" },
         "region_name" : { "Ref" : "RegionName" }
       }
     },

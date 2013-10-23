@@ -4,7 +4,7 @@
   "Description" : "",
 
   "Parameters" : {
-  
+
     "KeyName" : {
       "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instances",
       "Type" : "String"
@@ -15,7 +15,7 @@
       "Type" : "String",
       "ConstraintDescription" : "must be a existing OpenStack region"
     },
-    
+
     "InstanceType" : {
       "Description" : "EC2 instance type",
       "Type" : "String",
@@ -23,7 +23,7 @@
       "AllowedValues" : [ "m1.tiny", "m1.small", "m1.medium", "m1.large", "m1.xlarge" ],
       "ConstraintDescription" : "must be a valid EC2 instance type."
     },
-    
+
     "LinuxDistribution": {
       "Default": "U12",
       "Description" : "Distribution of choice",
@@ -61,13 +61,13 @@
       "Type" : "String",
       "ConstraintDescription" : "must be a valid IP address"
     },
-    
+
     "VPNPeerCidr" : {
       "Description" : "Cidr for VPN peer",
       "Type" : "String",
       "ConstraintDescription" : "must be a valid cidr"
     },
-    
+
     "DBName": {
       "Default": "wordpress",
       "Description" : "The WordPress database name",
@@ -99,7 +99,7 @@
       "AllowedPattern" : "[a-zA-Z0-9]*",
       "ConstraintDescription" : "must contain only alphanumeric characters."
     },
-    
+
     "DBServerIPAddress" : {
       "Description" : "IP address of database server",
       "Type" : "String",
@@ -107,22 +107,22 @@
     }
 
   },
-  
+
   "Mappings" : {
     "OpenstackRegion2Image" : {
-      "RegionOne" : { 
-	"F17" : "F17-x86_64-cfntools",
-	"U12" : "ubuntu-vm-heat-cfntools"
+      "RegionOne" : {
+        "F17" : "F17-x86_64-cfntools",
+        "U12" : "ubuntu-vm-heat-cfntools"
       },
       "RegionTwo" : {
-	"F17" : "F17-x86_64-cfntools",
-	"U12" : "ubuntu-vm-heat-cfntools"
+        "F17" : "F17-x86_64-cfntools",
+        "U12" : "ubuntu-vm-heat-cfntools"
       }
     }
   },
-  
+
   "Resources" : {
-  
+
     "NetworkSetup": {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
@@ -137,7 +137,7 @@
         }
       }
     },
-  
+
     "AppServer" : {
       "Type": "AWS::EC2::Instance",
       "DependsOn" : "NetworkSetup",
@@ -178,9 +178,12 @@
   },
 
   "Outputs" : {
+
     "AppServerIP" : {
       "Description" : "Application Server IP address",
       "Value" : { "Fn::GetAtt" : [ "AppServer", "PublicIp" ] }
     }
+
   }
+
 }

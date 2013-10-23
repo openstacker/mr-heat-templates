@@ -4,12 +4,12 @@
   "Description" : "",
 
   "Parameters" : {
-  
+
     "KeyName" : {
       "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instances",
       "Type" : "String"
     }
-    
+
   },
 
   "Resources" : {
@@ -21,7 +21,7 @@
         "description": "My first context",
         "username" : "admin",
         "password" : "openstack",
-        "project_name" : "demo",
+        "tenant" : "demo",
         "region_name" : "RegionOne"
       }
     },
@@ -33,7 +33,7 @@
         "description": "My second context",
         "username" : "admin",
         "password" : "openstack",
-        "project_name" : "demo",
+        "tenant" : "demo",
         "region_name" : "RegionTwo"
       }
     },
@@ -58,7 +58,7 @@
         }
       }
     },
-    
+
     "AppServer" : {
       "Type": "AWS::CloudFormation::Stack",
       "DependsOn" : "ContextTwo",
@@ -80,17 +80,21 @@
         }
       }
     }
-    
+
   },
 
   "Outputs" : {
+
     "DBServerIP" : {
       "Description" : "Database Server IP Address",
       "Value" : { "Fn::GetAtt": [ "DBServer", "Outputs.DBServerIP" ]}
     },
+
     "AppServerIP" : {
       "Description" : "Application Server IP Address",
       "Value" : { "Fn::GetAtt": [ "AppServer", "Outputs.AppServerIP" ]}
     }
+
   }
+
 }

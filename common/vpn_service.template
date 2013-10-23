@@ -39,7 +39,7 @@
       "Default" : "10.1.0.200",
       "ConstraintDescription" : "must be a valid IP address"
     },
-    
+
     "VPNPeerCidr" : {
       "Description" : "Cidr for VPN peer",
       "Type" : "String",
@@ -48,9 +48,9 @@
     }
 
   },
-  
+
   "Resources" : {
-  
+
     "Network": {
       "Type": "OS::Quantum::Net",
       "Properties": {
@@ -90,7 +90,7 @@
         "subnet_id": { "Ref" : "Subnet" }
       }
     },
-    
+
     "RouterGateway": {
       "Type": "OS::Quantum::RouterGateway",
       "DependsOn" : "RouterInterface",
