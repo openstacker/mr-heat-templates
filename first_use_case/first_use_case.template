@@ -21,7 +21,7 @@
         "description": "My first context",
         "username" : "admin",
         "password" : "openstack",
-        "project_name" : "demo",
+        "tenant" : "demo",
         "region_name" : "RegionOne"
       }
     },
@@ -33,11 +33,11 @@
         "description": "My second context",
         "username" : "admin",
         "password" : "openstack",
-        "project_name" : "demo",
+        "tenant" : "demo",
         "region_name" : "RegionTwo"
       }
     },
-  
+
     "ServerOne" : {
       "Type": "AWS::CloudFormation::Stack",
       "DependsOn" : "ContextOne",
