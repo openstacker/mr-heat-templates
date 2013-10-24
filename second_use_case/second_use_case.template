@@ -26,18 +26,6 @@
       }
     },
 
-    "ContextTwo": {
-      "Type": "OS::Cloud::Context",
-      "Properties": {
-        "name": "Context Two",
-        "description": "My second context",
-        "username" : "admin",
-        "password" : "openstack",
-        "tenant" : "demo",
-        "region_name" : "RegionTwo"
-      }
-    },
-
     "DBServer" : {
       "Type": "AWS::CloudFormation::Stack",
       "DependsOn" : "ContextOne",
@@ -59,6 +47,18 @@
       }
     },
 
+    "ContextTwo": {
+      "Type": "OS::Cloud::Context",
+      "Properties": {
+        "name": "Context Two",
+        "description": "My second context",
+        "username" : "admin",
+        "password" : "openstack",
+        "tenant" : "demo",
+        "region_name" : "RegionTwo"
+      }
+    },
+
     "AppServer" : {
       "Type": "AWS::CloudFormation::Stack",
       "DependsOn" : "ContextTwo",
@@ -76,7 +76,7 @@
           "SubnetPoolStart"          : "10.2.0.10",
           "SubnetPoolEnd"            : "10.2.0.200",
           "VPNPeerCidr"              : "10.1.0.0/24",
-          "DBServerIPAddress"        : { "Fn::GetAtt": [ "DBServer", "Outputs.DBServerIP" ]}
+          "DBServerIPAddress"        : { "Fn::GetAtt": [ "DBServer", "Outputs.DBServerIP" ] }
         }
       }
     }
@@ -87,12 +87,12 @@
 
     "DBServerIP" : {
       "Description" : "Database Server IP Address",
-      "Value" : { "Fn::GetAtt": [ "DBServer", "Outputs.DBServerIP" ]}
+      "Value" : { "Fn::GetAtt": [ "DBServer", "Outputs.DBServerIP" ] }
     },
 
     "AppServerIP" : {
       "Description" : "Application Server IP Address",
-      "Value" : { "Fn::GetAtt": [ "AppServer", "Outputs.AppServerIP" ]}
+      "Value" : { "Fn::GetAtt": [ "AppServer", "Outputs.AppServerIP" ] }
     }
 
   }
