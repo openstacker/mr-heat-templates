@@ -34,7 +34,7 @@
         "Context" : { "Ref" : "ContextOne" },
         "Parameters": {
           "KeyName"                  : { "Ref" : "KeyName" },
-          "RegionName"               : "RegionOne",
+          "RegionName"               : { "Fn::GetAtt" : [ "ContextOne", "region_name" ] },
           "InstanceType"             : "m1.small",
           "LinuxDistribution"        : "U12",
           "KVMAvailabilityZoneName"  : "nova",
@@ -68,7 +68,7 @@
         "Context" : { "Ref" : "ContextTwo" },
         "Parameters": {
           "KeyName"                    : { "Ref" : "KeyName" },
-          "RegionName"                 : "RegionTwo",
+          "RegionName"                 : { "Fn::GetAtt" : [ "ContextTwo", "region_name" ] },
           "InstanceType"               : "m1.small",
           "LinuxDistribution"          : "U12",
           "KVMAvailabilityZoneName"    : "nova",
