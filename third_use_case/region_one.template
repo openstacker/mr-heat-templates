@@ -7,12 +7,14 @@
 
     "KeyName" : {
       "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instances",
-      "Type" : "String"
+      "Type" : "String",
+      "Defautl" : "heat_key"
     },
 
     "RegionName" : {
       "Description" : "Name of the region",
       "Type" : "String",
+      "Defautl" : "RegionOne",
       "ConstraintDescription" : "must be a existing OpenStack region"
     },
 
@@ -21,7 +23,7 @@
       "Type" : "String",
       "Default" : "m1.small",
       "AllowedValues" : [ "m1.tiny", "m1.small", "m1.medium", "m1.large", "m1.xlarge" ],
-      "ConstraintDescription" : "must be a valid EC2 instance type"
+      "ConstraintDescription" : "must be a valid EC2 instance type."
     },
 
     "LinuxDistribution": {
@@ -29,6 +31,13 @@
       "Description" : "Distribution of choice",
       "Type": "String",
       "AllowedValues" : [ "F17", "U12" ]
+    },
+
+    "KVMAvailabilityZoneName" : {
+      "Description" : "Name of availability zone with KVM as hypervisor",
+      "Type" : "String",
+      "Defautl" : "nova",
+      "ConstraintDescription" : "must be a name of existing availability zone"
     },
 
     "ExternalNetworkNameOrId" : {
@@ -104,16 +113,17 @@
       }
     },
 
-    "Server" : {
+    "KVMServer" : {
       "Type": "AWS::EC2::Instance",
-      "DependsOn" : "NetworkSetup",
-      "Properties": {
-        "ImageId"      : { "Fn::FindInMap" : [ "OpenstackRegion2Image",
-                                               { "Ref" : "RegionName" },
-                                               { "Ref" : "LinuxDistribution" } ] },
-        "InstanceType" : { "Ref" : "InstanceType" },
-        "KeyName"      : { "Ref" : "KeyName" },
-        "SubnetId"     : { "Fn::GetAtt": [ "NetworkSetup", "Outputs.SubnetId" ] }
+      "Properties" : {
+        "ImageId"          : { "Fn::FindInMap" : [ "OpenstackRegion2Image",
+                                                   { "Ref" : "RegionName" },
+                                                   { "Ref" : "LinuxDistribution" } ] },
+        "AvailabilityZone" : { "Ref" : "KVMAvailabilityZoneName"},
+        "InstanceType"     : { "Ref" : "InstanceType" },
+        "KeyName"          : { "Ref" : "KeyName" },
+        "SubnetId"         : { "Fn::GetAtt": [ "NetworkSetup",
+                                               "Outputs.SubnetId" ] }
       }
     }
 
@@ -121,9 +131,9 @@
 
   "Outputs" : {
 
-    "ServerIP" : {
-      "Description" : "Server IP address",
-      "Value" : { "Fn::GetAtt" : [ "Server", "PublicIp" ] }
+    "KVMServerIP" : {
+      "Description" : "KVM Server IP address",
+      "Value" : { "Fn::GetAtt" : [ "KVMServer", "PublicIp" ] }
     }
 
   }

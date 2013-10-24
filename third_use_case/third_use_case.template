@@ -1,7 +1,7 @@
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
 
-  "Description" : "",
+  "Description" : "Creates VPN connection between to different regions and lanuches servers in each region within specified availability zone",
 
   "Parameters" : {
 
@@ -26,17 +26,18 @@
       }
     },
 
-    "DBServer" : {
+    "RegionOneConf" : {
       "Type": "AWS::CloudFormation::Stack",
       "DependsOn" : "ContextOne",
       "Properties": {
-        "TemplateURL": "http://127.0.0.1:8080/second_use_case/db_server.template",
+        "TemplateURL": "http://127.0.0.1:8080/third_use_case/region_one.template",
         "Context" : { "Ref" : "ContextOne" },
         "Parameters": {
           "KeyName"                  : { "Ref" : "KeyName" },
           "RegionName"               : "RegionOne",
           "InstanceType"             : "m1.small",
           "LinuxDistribution"        : "U12",
+          "KVMAvailabilityZoneName"  : "nova",
           "ExternalNetworkNameOrId"  : "public",
           "ExternalGatewayIPAddress" : "172.24.4.233",
           "SubnetCidr"               : "10.1.0.0/24",
@@ -59,24 +60,25 @@
       }
     },
 
-    "AppServer" : {
+    "RegionTwoConf" : {
       "Type": "AWS::CloudFormation::Stack",
       "DependsOn" : "ContextTwo",
       "Properties": {
-        "TemplateURL": "http://127.0.0.1:8080/second_use_case/app_server.template",
+        "TemplateURL": "http://127.0.0.1:8080/third_use_case/region_two.template",
         "Context" : { "Ref" : "ContextTwo" },
         "Parameters": {
-          "KeyName"                  : { "Ref" : "KeyName" },
-          "RegionName"               : "RegionTwo",
-          "InstanceType"             : "m1.small",
-          "LinuxDistribution"        : "U12",
-          "ExternalNetworkNameOrId"  : "public",
-          "ExternalGatewayIPAddress" : "172.24.4.226",
-          "SubnetCidr"               : "10.2.0.0/24",
-          "SubnetPoolStart"          : "10.2.0.10",
-          "SubnetPoolEnd"            : "10.2.0.200",
-          "VPNPeerCidr"              : "10.1.0.0/24",
-          "DBServerIPAddress"        : { "Fn::GetAtt": [ "DBServer", "Outputs.DBServerIP" ] }
+          "KeyName"                    : { "Ref" : "KeyName" },
+          "RegionName"                 : "RegionTwo",
+          "InstanceType"               : "m1.small",
+          "LinuxDistribution"          : "U12",
+          "KVMAvailabilityZoneName"    : "nova",
+          "VMWAREAvailabilityZoneName" : "nova",
+          "ExternalNetworkNameOrId"    : "public",
+          "ExternalGatewayIPAddress"   : "172.24.4.226",
+          "SubnetCidr"                 : "10.2.0.0/24",
+          "SubnetPoolStart"            : "10.2.0.10",
+          "SubnetPoolEnd"              : "10.2.0.200",
+          "VPNPeerCidr"                : "10.1.0.0/24"
         }
       }
     }
@@ -85,14 +87,19 @@
 
   "Outputs" : {
 
-    "DBServerIP" : {
-      "Description" : "Database Server IP Address",
-      "Value" : { "Fn::GetAtt": [ "DBServer", "Outputs.DBServerIP" ] }
+    "RegionOneKVMServerIP" : {
+      "Description" : "RegioneOne KVM Server IP address",
+      "Value" : { "Fn::GetAtt" : [ "RegionOneConf", "Outputs.KVMServerIP" ] }
     },
 
-    "AppServerIP" : {
-      "Description" : "Application Server IP Address",
-      "Value" : { "Fn::GetAtt": [ "AppServer", "Outputs.AppServerIP" ] }
+    "RegionTwoKVMServerIP" : {
+      "Description" : "RegionTwo KVM Server IP address",
+      "Value" : { "Fn::GetAtt" : [ "RegionTwoConf", "Outputs.KVMServerIP" ] }
+    },
+
+    "RegionTwoWAREServerIP" : {
+      "Description" : "RegionTwo VMWARE Server IP address",
+      "Value" : { "Fn::GetAtt" : [ "RegionTwoConf", "Outputs.VMWAREServerIP" ] }
     }
 
   }
