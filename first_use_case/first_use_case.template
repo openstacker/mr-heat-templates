@@ -34,7 +34,7 @@
         "TemplateURL": "http://127.0.0.1:8080/first_use_case/first_use_case_nested.template",
         "Parameters": {
           "KeyName"                  : { "Ref" : "KeyName" },
-          "RegionName"               : "RegionOne",
+          "RegionName"               : { "Fn::GetAtt" : [ "ContextOne", "region_name" ] },
           "InstanceType"             : "m1.small",
           "LinuxDistribution"        : "U12",
           "ExternalNetworkNameOrId"  : "public",
@@ -67,7 +67,7 @@
         "TemplateURL": "http://127.0.0.1:8080/first_use_case/first_use_case_nested.template",
         "Parameters": {
           "KeyName"                  : { "Ref" : "KeyName" },
-          "RegionName"               : "RegionTwo",
+          "RegionName"               : { "Fn::GetAtt" : [ "ContextTwo", "region_name" ] },
           "InstanceType"             : "m1.small",
           "LinuxDistribution"        : "U12",
           "ExternalNetworkNameOrId"  : "public",
