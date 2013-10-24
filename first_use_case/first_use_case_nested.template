@@ -72,15 +72,19 @@
 
   "Mappings" : {
     "OpenstackRegion2Image" : {
+
       "RegionOne" : {
         "F17" : "F17-x86_64-cfntools",
         "U12" : "ubuntu-vm-heat-cfntools"
       },
+
       "RegionTwo" : {
         "F17" : "F17-x86_64-cfntools",
         "U12" : "ubuntu-vm-heat-cfntools"
       }
+
     }
+
   },
 
   "Resources" : {
@@ -109,7 +113,7 @@
                                                { "Ref" : "LinuxDistribution" } ] },
         "InstanceType" : { "Ref" : "InstanceType" },
         "KeyName"      : { "Ref" : "KeyName" },
-        "SubnetId"     : { "Fn::GetAtt": [ "NetworkSetup", "Outputs.SubnetId" ]}
+        "SubnetId"     : { "Fn::GetAtt": [ "NetworkSetup", "Outputs.SubnetId" ] }
       }
     }
 

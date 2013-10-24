@@ -26,18 +26,6 @@
       }
     },
 
-    "ContextTwo": {
-      "Type": "OS::Cloud::Context",
-      "Properties": {
-        "name": "Context Two",
-        "description": "My second context",
-        "username" : "admin",
-        "password" : "openstack",
-        "tenant" : "demo",
-        "region_name" : "RegionTwo"
-      }
-    },
-
     "ServerOne" : {
       "Type": "AWS::CloudFormation::Stack",
       "DependsOn" : "ContextOne",
@@ -56,6 +44,18 @@
           "SubnetPoolEnd"            : "10.1.0.200",
           "VPNPeerCidr"              : "10.2.0.0/24"
         }
+      }
+    },
+
+    "ContextTwo": {
+      "Type": "OS::Cloud::Context",
+      "Properties": {
+        "name": "Context Two",
+        "description": "My second context",
+        "username" : "admin",
+        "password" : "openstack",
+        "tenant" : "demo",
+        "region_name" : "RegionTwo"
       }
     },
 
@@ -79,17 +79,21 @@
         }
       }
     }
-    
+
   },
 
   "Outputs" : {
+
     "ServerOneIP" : {
       "Description" : "Server One IP address",
-      "Value" : { "Fn::GetAtt": [ "ServerOne", "Outputs.ServerIP" ]}
+      "Value" : { "Fn::GetAtt": [ "ServerOne", "Outputs.ServerIP" ] }
     },
+
     "ServerTwoIP" : {
       "Description" : "Server Two IP address",
-      "Value" : { "Fn::GetAtt": [ "ServerTwo", "Outputs.ServerIP" ]}
+      "Value" : { "Fn::GetAtt": [ "ServerTwo", "Outputs.ServerIP" ] }
     }
+
   }
+
 }
