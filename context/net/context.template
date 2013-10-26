@@ -53,7 +53,7 @@
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
         "Context" : { "Ref" : "MyContext" },
-        "TemplateURL": "http://127.0.0.1:8080/context/net.template",
+        "TemplateURL": "http://127.0.0.1:8080/context/net/net.template",
         "Parameters": {}
       }
     }
