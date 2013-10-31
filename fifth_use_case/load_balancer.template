@@ -1,0 +1,48 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Load balancer for wordpress instances",
+
+  "Parameters" : {
+
+    "WordpressInstanceRefRegionOne" : {
+      "Description" : "Reference to Wordpress instance in RegionOne",
+      "Type" : "String",
+      "ConstraintDescription" : "must be a reference to existing instance"
+    },
+
+    "WordpressInstanceRefRegionTwo" : {
+      "Description" : "Reference to Wordpress instance in RegionTwo",
+      "Type" : "String",
+      "ConstraintDescription" : "must be a reference to existing instance"
+    }
+
+  },
+
+  "Resources" : {
+
+    "LB" : {
+      "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties" : {
+        "AvailabilityZones" : { "Fn::GetAZs" : "" },
+        "Instances" : [{"Ref": "WordpressInstanceRefRegionOne"}, {"Ref": "WordpressInstanceRefRegionTwo"}],
+        "Listeners" : [ {
+          "LoadBalancerPort" : "80",
+          "InstancePort" : "80",
+          "Protocol" : "HTTP"
+        }]
+      }
+    }
+
+  },
+
+  "Outputs" : {
+
+    "WebsiteURL": {
+      "Value": { "Fn::Join": ["", ["http://", { "Fn::GetAtt": [ "LB", "DNSName" ]}, "/wordpress"]] },
+      "Description": "URL for Wordpress wiki"
+    }
+
+  }
+
+}
