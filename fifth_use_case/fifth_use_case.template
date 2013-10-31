@@ -1,0 +1,130 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Creates two wordpress with common db server within two different regions",
+
+  "Parameters" : {
+
+    "KeyName" : {
+      "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+      "Type" : "String"
+    },
+
+    "KVMAvailabilityZoneName" : {
+      "Description" : "Name of availability zone with KVM as hypervisor",
+      "Type" : "String",
+      "Defautl" : "nova",
+      "ConstraintDescription" : "must be a name of existing availability zone"
+    },
+
+    "VMWAREAvailabilityZoneName" : {
+      "Description" : "Name of availability zone with VMWARE as hypervisor",
+      "Type" : "String",
+      "Defautl" : "nova",
+      "ConstraintDescription" : "must be a name of existing availability zone"
+    }
+
+  },
+
+  "Resources" : {
+
+    "ContextOne": {
+      "Type": "OS::Cloud::Context",
+      "Properties": {
+        "name": "Context One",
+        "description": "My first context",
+        "username" : "admin",
+        "password" : "openstack",
+        "tenant" : "demo",
+        "region_name" : "RegionOne"
+      }
+    },
+
+    "RegionOneConf" : {
+      "Type": "AWS::CloudFormation::Stack",
+      "DependsOn" : "ContextOne",
+      "Properties": {
+        "TemplateURL": "http://127.0.0.1:8080/fifth_use_case/region_one.template",
+        "Context" : { "Ref" : "ContextOne" },
+        "Parameters": {
+          "KeyName"                       : { "Ref" : "KeyName" },
+          "RegionName"                    : { "Fn::GetAtt" : [ "ContextOne", "region_name" ] },
+          "InstanceType"                  : "m1.small",
+          "LinuxDistribution"             : "F17",
+          "DBName"                        : "wordpress",
+          "DBUsername"                    : "admin",
+          "DBPassword"                    : "admin",
+          "DBRootPassword"                : "admin",
+          "DBAvailabilityZoneName"        : { "Ref" : "VMWAREAvailabilityZoneName" },
+          "WordpressAvailabilityZoneName" : { "Ref" : "KVMAvailabilityZoneName" }
+        }
+      }
+    },
+
+    "ContextTwo": {
+      "Type": "OS::Cloud::Context",
+      "Properties": {
+        "name": "Context Two",
+        "description": "My second context",
+        "username" : "admin",
+        "password" : "openstack",
+        "tenant" : "demo",
+        "region_name" : "RegionTwo"
+      }
+    },
+
+    "RegionTwoConf" : {
+      "Type": "AWS::CloudFormation::Stack",
+      "DependsOn" : "RegionOneConf",
+      "Properties": {
+        "TemplateURL": "http://127.0.0.1:8080/fifth_use_case/region_two.template",
+        "Context" : { "Ref" : "ContextTwo" },
+        "Parameters": {
+          "KeyName"                       : { "Ref" : "KeyName" },
+          "RegionName"                    : { "Fn::GetAtt" : [ "ContextTwo", "region_name" ] },
+          "InstanceType"                  : "m1.small",
+          "LinuxDistribution"             : "F17",
+          "DBName"                        : "wordpress",
+          "DBUsername"                    : "admin",
+          "DBPassword"                    : "admin",
+          "DBServerIPAddress"             : { "Fn::GetAtt": [ "RegionOneConf", "Outputs.DBServerIP" ] },
+          "WordpressAvailabilityZoneName" : { "Ref" : "KVMAvailabilityZoneName" }
+        }
+      }
+    },
+
+    "LB" : {
+      "Type": "AWS::CloudFormation::Stack",
+      "DependsOn" : "RegionTwoConf",
+      "Properties": {
+        "TemplateURL": "http://127.0.0.1:8080/fifth_use_case/load_balancer.template",
+        "Context" : { "Ref" : "ContextTwo" },
+        "Parameters": {
+          "WordpressInstanceRefRegionOne": { "Fn::GetAtt" : [ "RegionOneConf", "Outputs.AppServerRef" ] },
+          "WordpressInstanceRefRegionTwo": { "Fn::GetAtt" : [ "RegionTwoConf", "Outputs.AppServerRef" ] }
+        }
+      }
+    }
+
+  },
+
+  "Outputs" : {
+
+    "RegionOneWordpressURL" : {
+      "Description" : "URL for Wordpress wiki in RegionOne",
+      "Value" : { "Fn::Join" : ["", ["http://", { "Fn::GetAtt" : [ "RegionOneConf", "Outputs.AppServerIP" ] }, "/wordpress"]] }
+    },
+
+    "RegionTwoWordpressURL" : {
+      "Description" : "URL for Wordpress wiki in RegionTwo",
+      "Value" : { "Fn::Join" : ["", ["http://", { "Fn::GetAtt" : [ "RegionTwoConf", "Outputs.AppServerIP" ] }, "/wordpress"]] }
+    },
+
+    "LoadBalancerURL" : {
+      "Description" : "URL for load balancer",
+      "Value" : { "Fn::GetAtt" : [ "LB", "Outputs.WebsiteURL" ] }
+    }
+
+  }
+
+}
