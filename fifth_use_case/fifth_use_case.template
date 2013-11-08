@@ -75,7 +75,7 @@
         "username" : "admin",
         "password" : "openstack",
         "tenant" : "demo",
-        "region_name" : "RegionTwo"
+        "region_name" : "RegionOne"
       }
     },
 

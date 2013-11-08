@@ -108,7 +108,7 @@
     "NetworkSetup": {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
-        "TemplateURL": "http://127.0.0.1:8080/common/vpn_service.template",
+        "TemplateURL": "http://127.0.0.1:8080/common/network_setup.template",
         "Parameters": {
           "ExternalNetworkNameOrId"  : { "Ref" : "ExternalNetworkNameOrId" },
           "ExternalGatewayIPAddress" : { "Ref" : "ExternalGatewayIPAddress" },
