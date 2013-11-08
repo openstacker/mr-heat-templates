@@ -15,7 +15,7 @@
   "Resources" : {
 
     "ContextOne": {
-      "Type": "OS::Cloud::Context",
+      "Type": "OS::Heat::CloudContext",
       "Properties": {
         "name": "Context One",
         "description": "My first context",
@@ -27,7 +27,7 @@
     },
 
     "ServerOne" : {
-      "Type": "AWS::CloudFormation::Stack",
+      "Type": "OS::Heat::Stack",
       "DependsOn" : "ContextOne",
       "Properties": {
         "Context" : { "Ref" : "ContextOne" },
@@ -48,7 +48,7 @@
     },
 
     "ContextTwo": {
-      "Type": "OS::Cloud::Context",
+      "Type": "OS::Heat::CloudContext",
       "Properties": {
         "name": "Context Two",
         "description": "My second context",
@@ -60,7 +60,7 @@
     },
 
     "ServerTwo" : {
-      "Type": "AWS::CloudFormation::Stack",
+      "Type": "OS::Heat::Stack",
       "DependsOn" : "ContextTwo",
       "Properties": {
         "Context" : { "Ref" : "ContextTwo" },

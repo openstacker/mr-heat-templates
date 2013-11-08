@@ -8,42 +8,36 @@
     "ExternalNetworkNameOrId" : {
       "Description" : "External network name or id",
       "Type" : "String",
-      "Default" : "public",
       "ConstraintDescription" : "must be a name or id of existing external network"
     },
 
     "ExternalGatewayIPAddress" : {
       "Description" : "External Gateway IP address",
       "Type" : "String",
-      "Default" : "172.24.4.233",
       "ConstraintDescription" : "must be an IP address of external gateway"
     },
 
     "SubnetCidr" : {
       "Description" : "Subnet cidr",
       "Type" : "String",
-      "Default" : "10.1.0.0/24",
       "ConstraintDescription" : "must be a cidr"
     },
 
     "SubnetPoolStart" : {
       "Description" : "Start of allocation pool for subnet",
       "Type" : "String",
-      "Default" : "10.1.0.10",
       "ConstraintDescription" : "must be a valid IP address"
     },
 
     "SubnetPoolEnd" : {
       "Description" : "End of allocation pool for subnet",
       "Type" : "String",
-      "Default" : "10.1.0.200",
       "ConstraintDescription" : "must be a valid IP address"
     },
 
     "VPNPeerCidr" : {
       "Description" : "Cidr for VPN peer",
       "Type" : "String",
-      "Default" : "10.2.0.0/24",
       "ConstraintDescription" : "must be a valid cidr"
     }
 
@@ -78,7 +72,10 @@
     "Router": {
       "Type": "OS::Quantum::Router",
       "Properties": {
-        "name": "My Router"
+        "name": "My Router",
+        "external_gateway_info": {
+          "network": { "Ref" : "Network" }
+        }
       }
     },
 
@@ -91,84 +88,19 @@
       }
     },
 
-    "RouterGateway": {
-      "Type": "OS::Quantum::RouterGateway",
-      "DependsOn" : "RouterInterface",
+    "NetworkSetup": {
+      "Type": "OS::Heat::Stack",
       "Properties": {
-        "router_id": { "Ref" : "Router" },
-        "network_id": { "Ref" : "ExternalNetworkNameOrId" }
-      }
-    },
-
-    "VPNService" : {
-      "Type" : "OS::Neutron::VPNService",
-      "DependsOn" : "RouterGateway",
-      "Properties" : {
-        "name" : "VPNService",
-        "description" : "My new VPN service",
-        "admin_state_up" : true,
-        "router_id" : { "Ref" : "Router" },
-        "subnet_id" : { "Ref" : "Subnet" }
-      }
-    },
-
-    "IKEPolicy" : {
-      "Type" : "OS::Neutron::IKEPolicy",
-      "Properties" : {
-        "name" : "IKEPolicy",
-        "description" : "My new IKE policy",
-        "auth_algorithm" : "sha1",
-        "encryption_algorithm" : "3des",
-        "phase1_negotiation_mode" : "main",
-        "lifetime" : {
-            "units" : "seconds",
-            "value" : 3600
-        },
-        "pfs" : "group5",
-        "ike_version" : "v1"
-      }
-    },
-
-    "IPsecPolicy" : {
-      "Type" : "OS::Neutron::IPsecPolicy",
-      "Properties" : {
-        "name" : "IPsecPolicy",
-        "description" : "My new IPsec policy",
-        "transform_protocol": "esp",
-        "encapsulation_mode" : "tunnel",
-        "auth_algorithm" : "sha1",
-        "encryption_algorithm" : "3des",
-        "lifetime" : {
-            "units" : "seconds",
-            "value" : 3600
-        },
-        "pfs" : "group5"
-      }
-    },
-
-    "IPsecSiteConnection" : {
-      "Type" : "OS::Neutron::IPsecSiteConnection",
-      "DependsOn" : "VPNService",
-      "Properties" : {
-        "name" : "IPsecSiteConnection",
-        "description" : "My new VPN connection",
-        "peer_address" : { "Ref" : "ExternalGatewayIPAddress" },
-        "peer_id" : { "Ref" : "ExternalGatewayIPAddress" },
-        "peer_cidrs" : [ { "Ref" : "VPNPeerCidr" } ],
-        "mtu" : 1500,
-        "dpd" : { 
-            "actions" : "hold",
-            "interval" : 30,
-            "timeout" : 120
-        },
-        "psk" : "secret",
-        "initiator" : "bi-directional",
-        "admin_state_up" : true,
-        "ikepolicy_id" : { "Ref" : "IKEPolicy" },
-        "ipsecpolicy_id" : { "Ref" : "IPsecPolicy" },
-        "vpnservice_id" : { "Ref" : "VPNService" }
+        "TemplateURL": "http://127.0.0.1:8080/common/vpn_service.template",
+        "Parameters": {
+          "RouterId"                 : { "Ref" : "Router" },
+          "SubnetId"                 : { "Ref" : "Subnet" },
+          "ExternalGatewayIPAddress" : { "Fn::Select" : [ "fixed_ip", { "Fn::GetAtt" : [ "Router", "external_gateway_info" ]} ]},
+          "VPNPeerCidr"              : { "Ref" : "VPNPeerCidr" }
+        }
       }
     }
+
   },
 
   "Outputs" : {
