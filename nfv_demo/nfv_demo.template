@@ -1,0 +1,67 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "",
+
+  "Parameters" : {
+
+    "KeyName" : {
+      "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+      "Type" : "String"
+    }
+
+  },
+
+  "Resources" : {
+
+    "ContextOne": {
+      "Type": "OS::Heat::CloudContext",
+      "Properties": {
+        "name": "Context One",
+        "description": "My first context",
+        "username" : "admin",
+        "password" : "openstack",
+        "tenant" : "demo",
+        "region_name" : "RegionOne"
+      }
+    },
+
+    "ServerOne" : {
+      "Type": "OS::Heat::Stack",
+      "Properties": {
+        "Context" : { "Ref" : "ContextOne" },
+        "TemplateURL": "https://raw.github.com/hanney/mr-heat-templates/nfv_demo/nfv_demo/region_one.template",
+        "Parameters": {
+          "KeyName"                 : { "Ref" : "KeyName" },
+          "DBServerIPAddress1"      : "192.168.4.253",
+          "DBServerIPAddress2"      : "192.168.4.252"
+        }
+      }
+    },
+
+    "ContextTwo": {
+      "Type": "OS::Heat::CloudContext",
+      "Properties": {
+        "name": "Context Two",
+        "description": "My second context",
+        "username" : "admin",
+        "password" : "openstack",
+        "tenant" : "demo",
+        "region_name" : "RegionTwo"
+      }
+    },
+
+    "ServerTwo" : {
+      "Type": "OS::Heat::Stack",
+      "Properties": {
+        "Context" : { "Ref" : "ContextTwo" },
+        "TemplateURL": "https://raw.github.com/hanney/mr-heat-templates/nfv_demo/nfv_demo/region_two.template",
+        "Parameters": {
+          "KeyName" : { "Ref" : "KeyName" }
+        }
+      }
+    }
+
+  }
+
+}

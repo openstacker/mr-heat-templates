@@ -1,0 +1,67 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "",
+
+  "Parameters" : {
+
+    "KeyName" : {
+      "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+      "Type" : "String"
+    }
+
+  },
+
+  "Resources" : {
+
+    "BackendNetwork": {
+      "Type": "OS::Neutron::Net",
+      "l3vpn:route_target": [ "target:6800:2" ]
+    },
+
+    "BackendSubnet": {
+      "Type": "OS::Neutron::Subnet",
+      "Properties": {
+        "network_id": { "Ref" : "BackendNetwork" },
+        "ip_version": 4,
+        "cidr": "192.168.4.0/24",
+        "dns_nameservers": ["8.8.8.8"],
+        "allocation_pools": [ {
+          "start": "192.168.4.2",
+          "end": "192.168.4.253"
+          }
+        ]
+      }
+    },
+
+    "DBServer1" : {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": "https://raw.github.com/hanney/mr-heat-templates/nfv_demo/nfv_demo/db_server.template",
+        "Parameters": {
+          "KeyName"         : { "Ref" : "KeyName" },
+          "InstanceType"    : "m1.small",
+          "ServerImage"     : "F17-x86_64-cfntools",
+          "NetworkId"       : { "Ref" : "BackendSubnet" },
+          "ServerIPAddress" : "192.168.4.253"
+        }
+      }
+    },
+
+    "DBServer2" : {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": "https://raw.github.com/hanney/mr-heat-templates/nfv_demo/nfv_demo/db_server.template",
+        "Parameters": {
+          "KeyName"         : { "Ref" : "KeyName" },
+          "InstanceType"    : "m1.small",
+          "ServerImage"     : "F17-x86_64-cfntools",
+          "NetworkId"       : { "Ref" : "BackendSubnet" },
+          "ServerIPAddress" : "192.168.4.252"
+        }
+      }
+    }
+
+  }
+
+}

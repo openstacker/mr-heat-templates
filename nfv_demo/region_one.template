@@ -1,0 +1,132 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "",
+
+  "Parameters" : {
+
+    "KeyName" : {
+      "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+      "Type" : "String"
+    },
+
+    "DBServerIPAddress1" : {
+      "Description" : "IP address of database server one",
+      "Type" : "String",
+      "ConstraintDescription" : "must be a IP address"
+    },
+
+    "DBServerIPAddress2" : {
+      "Description" : "IP address of database server two",
+      "Type" : "String",
+      "ConstraintDescription" : "must be a IP address"
+    }
+
+  },
+
+  "Resources" : {
+
+    "InternetNetwork": {
+      "Type": "OS::Neutron::Net"
+    },
+
+    "InternetSubnet": {
+      "Type": "OS::Neutron::Subnet",
+      "Properties": {
+        "network_id": { "Ref" : "InternetNetwork" },
+        "ip_version": 4,
+        "cidr": "10.0.0.0/24",
+        "dns_nameservers": ["8.8.8.8"],
+        "allocation_pools": [ {
+          "start": "10.0.0.2",
+          "end": "10.0.0.253"
+          }
+        ]
+      }
+    },
+
+    "FrontendNetwork": {
+      "Type": "OS::Neutron::Net"
+    },
+
+    "FrontendSubnet": {
+      "Type": "OS::Neutron::Subnet",
+      "Properties": {
+        "network_id": { "Ref" : "FrontendNetwork" },
+        "ip_version": 4,
+        "cidr": "192.168.2.0/24",
+        "dns_nameservers": ["8.8.8.8"],
+        "allocation_pools": [ {
+          "start": "192.168.2.2",
+          "end": "192.168.2.253"
+          }
+        ]
+      }
+    },
+
+    "NetworkPolicy": {
+      "Type": "OS::Neutron::NetworkPolicy",
+      "Properties": {
+        "dest_network": { "Ref" : "FrontendNetwork" },
+        "src_network": { "Ref" : "InternetNetwork" },
+        "actions": [ "default-domain:demo:demo:service-dpi" ]
+      }
+    },
+
+    "BackendNetwork": {
+      "Type": "OS::Neutron::Net",
+      "l3vpn:route_target": [ "target:6800:2" ]
+    },
+
+    "BackendSubnet": {
+      "Type": "OS::Neutron::Subnet",
+      "Properties": {
+        "network_id": { "Ref" : "BackendNetwork" },
+        "ip_version": 4,
+        "cidr": "192.168.3.0/24",
+        "dns_nameservers": ["8.8.8.8"],
+        "allocation_pools": [ {
+          "start": "192.168.3.2",
+          "end": "192.168.3.253"
+          }
+        ]
+      }
+    },
+
+    "WPServer1" : {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": "https://raw.github.com/hanney/mr-heat-templates/nfv_demo/nfv_demo/wp_server.template",
+        "Parameters": {
+          "KeyName"                 : { "Ref" : "KeyName" },
+          "InstanceType"            : "m1.small",
+          "ServerImage"             : "F17-x86_64-cfntools",
+          "FrontendNetworkId"       : { "Ref" : "FrontendSubnet" },
+          "FrontendServerIPAddress" : "192.168.2.253",
+          "BackendNetworkId"        : { "Ref" : "BackendSubnet" },
+          "BackendServerIPAddress"  : "192.168.3.253",
+          "DBServerIPAddress"       : { "Ref" : "DBServerIPAddress1"}
+        }
+      }
+    },
+
+    "WPServer2" : {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": "https://raw.github.com/hanney/mr-heat-templates/nfv_demo/nfv_demo/wp_server.template",
+        "Parameters": {
+          "KeyName"                 : { "Ref" : "KeyName" },
+          "InstanceType"            : "m1.small",
+          "ServerImage"             : "F17-x86_64-cfntools",
+          "FrontendNetworkId"       : { "Ref" : "FrontendSubnet" },
+          "FrontendServerIPAddress" : "192.168.2.252",
+          "BackendNetworkId"        : { "Ref" : "BackendSubnet" },
+          "BackendServerIPAddress"  : "192.168.3.252",
+          "DBServerIPAddress"       : { "Ref" : "DBServerIPAddress2"}
+        }
+      }
+    }
+
+  }
+
+}

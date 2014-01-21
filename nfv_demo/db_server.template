@@ -1,0 +1,119 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "",
+
+  "Parameters" : {
+
+    "KeyName" : {
+      "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+      "Type" : "String"
+    },
+
+    "InstanceType" : {
+      "Description" : "EC2 instance type",
+      "Type" : "String",
+      "Default" : "m1.small",
+      "AllowedValues" : [ "m1.tiny", "m1.small", "m1.medium", "m1.large", "m1.xlarge" ],
+      "ConstraintDescription" : "must be a valid EC2 instance type"
+    },
+
+    "ServerImage": {
+      "Default": "F17-x86_64-cfntools",
+      "Description" : "Name of the image for the server",
+      "Type": "String",
+      "AllowedValues" : [ "F17-x86_64-cfntools" ]
+    },
+
+    "NetworkId" : {
+      "Description" : "Network Id for the server",
+      "Type" : "String",
+      "ConstraintDescription" : "must be an id of existing network"
+    },
+
+    "ServerIPAddress" : {
+      "Description" : "Private IP address for the server",
+      "Type" : "String",
+      "ConstraintDescription" : "must be an IP address"
+    },
+
+    "DBName" : {
+      "Default" : "wordpress",
+      "Description" : "The WordPress database name",
+      "Type" : "String",
+      "MinLength" : "1",
+      "MaxLength" : "64",
+      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+    },
+
+    "DBUsername": {
+      "Default": "admin",
+      "NoEcho": "true",
+      "Description" : "The WordPress database admin account username",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "16",
+      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+    },
+
+    "DBPassword": {
+      "Default": "admin",
+      "NoEcho": "true",
+      "Description" : "The WordPress database admin account password",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "41",
+      "AllowedPattern" : "[a-zA-Z0-9]*",
+      "ConstraintDescription" : "must contain only alphanumeric characters."
+    },
+
+    "DBRootPassword": {
+      "Default": "admin",
+      "NoEcho": "true",
+      "Description" : "Root password for MySQL",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "41",
+      "AllowedPattern" : "[a-zA-Z0-9]*",
+      "ConstraintDescription" : "must contain only alphanumeric characters."
+    }
+
+  },
+
+  "Resources" : {
+
+    "DBServer" : {
+      "Type" : "OS::Nova::Server",
+      "Properties" : {
+        "image" : { "Ref" : "ServerImage" },
+        "flavor" : { "Ref" : "InstanceType" },
+        "key_name" : { "Ref" : "KeyName" },
+        "networks" : [
+          {
+            "network": { "Ref" : "NetworkId" },
+            "fixed_ip": { "Ref" : "ServerIPAddress" }
+          }
+        ],
+        "user_data" : { "Fn::Base64" : { "Fn::Join" : ["", [
+          "#!/bin/bash -v\n",
+          "yum -y install mysql mysql-server\n",
+          "systemctl enable mysqld.service\n",
+          "systemctl start mysqld.service\n",
+          "# Setup MySQL root password and create a user\n",
+          "mysqladmin -u root password '", { "Ref" : "DBRootPassword" }, "'\n",
+          "cat << EOF | mysql -u root --password='", { "Ref" : "DBRootPassword" }, "'\n",
+          "CREATE DATABASE ", { "Ref" : "DBName" }, ";\n",
+          "GRANT ALL PRIVILEGES ON ", { "Ref" : "DBName" }, ".* TO \"", { "Ref" : "DBUsername" }, "\"@\"%\"\n",
+          "IDENTIFIED BY \"", { "Ref" : "DBPassword" }, "\";\n",
+          "FLUSH PRIVILEGES;\n",
+          "EXIT\n",
+          "EOF\n"
+        ]]}}
+      }
+    }
+
+  }
+
+}

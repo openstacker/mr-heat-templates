@@ -1,0 +1,127 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "",
+
+  "Parameters" : {
+
+    "KeyName" : {
+      "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+      "Type" : "String"
+    },
+
+    "InstanceType" : {
+      "Description" : "EC2 instance type",
+      "Type" : "String",
+      "Default" : "m1.small",
+      "AllowedValues" : [ "m1.tiny", "m1.small", "m1.medium", "m1.large", "m1.xlarge" ],
+      "ConstraintDescription" : "must be a valid EC2 instance type"
+    },
+
+    "ServerImage": {
+      "Default": "F17-x86_64-cfntools",
+      "Description" : "Name of the image for the server",
+      "Type": "String",
+      "AllowedValues" : [ "F17-x86_64-cfntools" ]
+    },
+
+    "FrontendNetworkId" : {
+      "Description" : "Frontend network Id for the server",
+      "Type" : "String",
+      "ConstraintDescription" : "must be an id of existing network"
+    },
+
+    "FrontendServerIPAddress" : {
+      "Description" : "Frontend IP address for the server",
+      "Type" : "String",
+      "ConstraintDescription" : "must be an IP address"
+    },
+
+    "BackendNetworkId" : {
+      "Description" : "Backend network Id for the server",
+      "Type" : "String",
+      "ConstraintDescription" : "must be an id of existing network"
+    },
+
+    "BackendServerIPAddress" : {
+      "Description" : "Backend IP address for the server",
+      "Type" : "String",
+      "ConstraintDescription" : "must be an IP address"
+    },
+
+    "DBName" : {
+      "Default" : "wordpress",
+      "Description" : "The WordPress database name",
+      "Type" : "String",
+      "MinLength" : "1",
+      "MaxLength" : "64",
+      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+    },
+
+    "DBUsername": {
+      "Default": "admin",
+      "NoEcho": "true",
+      "Description" : "The WordPress database admin account username",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "16",
+      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+    },
+
+    "DBPassword": {
+      "Default": "admin",
+      "NoEcho": "true",
+      "Description" : "The WordPress database admin account password",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "41",
+      "AllowedPattern" : "[a-zA-Z0-9]*",
+      "ConstraintDescription" : "must contain only alphanumeric characters."
+    },
+
+    "DBServerIPAddress" : {
+      "Description" : "IP address of database server",
+      "Type" : "String",
+      "ConstraintDescription" : "must be a IP address"
+    }
+
+  },
+
+  "Resources" : {
+
+    "WPServer" : {
+      "Type" : "OS::Nova::Server",
+      "Properties" : {
+        "image" : { "Ref" : "ServerImage" },
+        "flavor" : { "Ref" : "InstanceType" },
+        "key_name" : { "Ref" : "KeyName" },
+        "networks" : [
+          {
+            "network": { "Ref" : "FrontendNetworkId" },
+            "fixed_ip": { "Ref" : "FrontendServerIPAddress" }
+          },
+          {
+            "network": { "Ref" : "BackendNetworkId" },
+            "fixed_ip": { "Ref" : "BackendServerIPAddress" }
+          }
+        ],
+        "user_data" : { "Fn::Base64" : { "Fn::Join" : ["", [
+          "#!/bin/bash -v\n",
+          "yum -y install httpd wordpress\n",
+          "systemctl enable httpd.service\n",
+          "systemctl start httpd.service\n",
+          "firewall-cmd --add-service=http\n",
+          "firewall-cmd --permanent --add-service=http\n",
+          "sed -i \"/Deny from All/d\" /etc/httpd/conf.d/wordpress.conf\n",
+          "sed -i \"s/Require local/Require all granted/\" /etc/httpd/conf.d/wordpress.conf\n",
+          "sed --in-place --e s/database_name_here/", { "Ref" : "DBName" }, "/ --e s/username_here/", { "Ref" : "DBUsername" }, "/ --e s/password_here/", { "Ref" : "DBPassword" }, "/ --e s/localhost/", { "Ref" : "DBServerIPAddress" }, "/ /usr/share/wordpress/wp-config.php\n",
+          "systemctl restart httpd.service\n"
+        ]]}}
+      }
+    }
+
+  }
+
+}
